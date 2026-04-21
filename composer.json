@@ -1,0 +1,41 @@
+{
+  "name": "transi-store/symfony-translation-provider",
+  "type": "symfony-translation-bridge",
+  "description": "Transi-Store Translation Provider Bridge for Symfony",
+  "keywords": [
+    "transi-store",
+    "translation",
+    "provider",
+    "symfony"
+  ],
+  "homepage": "https://transi-store.com",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Julien Deniau",
+      "homepage": "https://github.com/jdeniau"
+    }
+  ],
+  "require": {
+    "php": ">=8.4",
+    "symfony/dependency-injection": "^6.4|^7.0|^8.0",
+    "symfony/http-client": "^6.4|^7.0|^8.0",
+    "symfony/http-kernel": "^6.4|^7.0|^8.0",
+    "symfony/mime": "^6.4|^7.0|^8.0",
+    "symfony/translation": "^6.4|^7.0|^8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0",
+    "symfony/config": "^6.4|^7.0|^8.0",
+    "symfony/phpunit-bridge": "^6.4|^7.0|^8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "TransiStore\\TranslationProvider\\": ""
+    },
+    "exclude-from-classmap": [
+      "/Tests/"
+    ]
+  },
+  "minimum-stability": "dev"
+}
