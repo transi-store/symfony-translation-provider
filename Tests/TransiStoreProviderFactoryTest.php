@@ -49,7 +49,7 @@ class TransiStoreProviderFactoryTest extends AbstractProviderFactoryTestCase
         yield ['transi-store://API_KEY@default/ORG'];
     }
 
-    public function testBaseUri()
+    public function testBaseUri(): void
     {
         $response = new JsonMockResponse(['files' => [], 'languages' => []]);
         $httpClient = new MockHttpClient([$response]);

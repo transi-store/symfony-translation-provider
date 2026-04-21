@@ -6,6 +6,7 @@ namespace TransiStore\TranslationProvider\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use TransiStore\TranslationProvider\TransiStoreProviderFactory;
 use TransiStore\TranslationProvider\TransiStoreTranslationProviderBundle;
 
@@ -17,8 +18,14 @@ class TransiStoreTranslationProviderBundleTest extends TestCase
 
         $container = new ContainerBuilder();
         $container->setParameter('kernel.default_locale', 'en');
-        $container->registerExtension($bundle->getContainerExtension());
-        $container->loadFromExtension($bundle->getContainerExtension()->getAlias());
+
+        
+        $containerExtension = $bundle->getContainerExtension();
+
+        assert($containerExtension instanceof ExtensionInterface);
+
+        $container->registerExtension($containerExtension);
+        $container->loadFromExtension($containerExtension->getAlias());
         $container->getCompilerPassConfig()->setOptimizationPasses([]);
         $container->getCompilerPassConfig()->setRemovingPasses([]);
         $container->getCompilerPassConfig()->setAfterRemovingPasses([]);

@@ -11,6 +11,7 @@ use Symfony\Component\Translation\Dumper\XliffFileDumper;
 use Symfony\Component\Translation\Exception\ProviderException;
 use Symfony\Component\Translation\Exception\RuntimeException;
 use Symfony\Component\Translation\Loader\LoaderInterface;
+use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Component\Translation\Provider\ProviderInterface;
 use Symfony\Component\Translation\TranslatorBag;
 use Symfony\Component\Translation\TranslatorBagInterface;
@@ -58,6 +59,8 @@ final class TransiStoreProvider implements ProviderInterface
             $locale = $catalogue->getLocale();
 
             foreach ($catalogue->getDomains() as $domain) {
+                assert(\is_string($domain));
+
                 $messages = $catalogue->all($domain);
                 if (!$messages) {
                     continue;
@@ -69,6 +72,8 @@ final class TransiStoreProvider implements ProviderInterface
                 }
 
                 $fileId = $filesByDomain[$domain];
+
+                assert($catalogue instanceof MessageCatalogue);
 
                 $content = $this->xliffFileDumper->formatCatalogue($catalogue, $domain, ['default_locale' => $this->defaultLocale]);
                 $filename = \sprintf('%s.%s.xlf', $domain, $locale);
@@ -98,6 +103,11 @@ final class TransiStoreProvider implements ProviderInterface
         }
     }
 
+    /**
+     * 
+     * @param array<string> $domains 
+     * @param array<string> $locales 
+     */
     public function read(array $domains, array $locales): TranslatorBag
     {
         $filesByDomain = $this->getFilesByDomain();
@@ -157,25 +167,47 @@ final class TransiStoreProvider implements ProviderInterface
         $response = $this->client->request('GET', '');
 
         if (200 !== $response->getStatusCode()) {
-            throw new ProviderException(\sprintf('Unable to fetch project metadata from Transi-Store: "%s".', $response->getContent(false)), $response);
+            throw new ProviderException(
+                \sprintf('Unable to fetch project metadata from Transi-Store: "%s".', $response->getContent(false)),
+                $response
+            );
         }
 
         $data = $response->toArray(false);
         $map = [];
 
-        foreach ($data['files'] ?? [] as $file) {
-            if (!isset($file['id'], $file['filePath'])) {
-                continue;
+        if (!isset($data['files'])) {
+            return $map;
+        }
+
+        if (!\is_array($data['files'])) {
+            throw new ProviderException(
+                'Invalid response from Transi-Store: "files" key is not an array.',
+                $response
+            );
+        }
+
+        foreach ($data['files']  as $file) {
+            if (
+                !\is_array($file)
+                || !isset($file['id'], $file['filePath'])
+                || !is_string($file['filePath'])
+                || !is_int($file['id'])
+            ) {
+                throw new ProviderException(
+                    'Invalid response from Transi-Store: each file should be an array with "id" and "filePath" keys.',
+                    $response
+                );
             }
 
-            $domain = $this->domainFromFilePath((string) $file['filePath']);
+            $domain = $this->domainFromFilePath($file['filePath']);
 
             if (null === $domain) {
                 $this->logger->warning(\sprintf('Unable to derive a Symfony domain from Transi-Store file path "%s", skipping.', $file['filePath']));
                 continue;
             }
 
-            $map[$domain] = (int) $file['id'];
+            $map[$domain] = $file['id'];
         }
 
         return $this->filesByDomain = $map;

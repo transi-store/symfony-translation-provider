@@ -13,6 +13,10 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 final class TransiStoreTranslationProviderBundle extends AbstractBundle
 {
+    /**
+     * 
+     * @param array<mixed> $config 
+     */
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
         $container->services()
