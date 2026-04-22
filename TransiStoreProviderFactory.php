@@ -37,7 +37,7 @@ final class TransiStoreProviderFactory extends AbstractProviderFactory
         [$orgSlug, $projectSlug] = $this->parsePath($dsn);
 
         $client = $this->client->withOptions([
-            'base_uri' => 'https://'.$endpoint.'/api/orgs/'.rawurlencode($orgSlug).'/projects/'.rawurlencode($projectSlug).'/',
+            'base_uri' => 'https://'.$endpoint.'/api/',
             'headers' => [
                 'Authorization' => 'Bearer '.$this->getUser($dsn),
             ],

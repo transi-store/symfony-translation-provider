@@ -248,7 +248,7 @@ XLIFF;
     private function createProvider(MockHttpClient $httpClient, ?XliffFileLoader $loader = null): TransiStoreProvider
     {
         $httpClient = $httpClient->withOptions([
-            'base_uri' => 'https://transi-store.com/api/orgs/ORG/projects/PROJECT/',
+            'base_uri' => 'https://transi-store.com/api/orgs/ORG/projects/PROJECT',
             'headers' => ['Authorization' => 'Bearer API_KEY'],
         ]);
 
