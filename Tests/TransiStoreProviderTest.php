@@ -51,7 +51,7 @@ XLIFF;
         $responses = [
             function (string $method, string $url): ResponseInterface {
                 $this->assertSame('GET', $method);
-                $this->assertStringEndsWith('/api/orgs/ORG/projects/PROJECT/', $url);
+                $this->assertStringEndsWith('/api/orgs/ORG/projects/PROJECT', $url);
 
                 return new JsonMockResponse([
                     'files' => [
@@ -102,7 +102,7 @@ XLIFF;
         $responses = [
             function (string $method, string $url): ResponseInterface {
                 $this->assertSame('GET', $method);
-                $this->assertStringEndsWith('/api/orgs/ORG/projects/PROJECT/', $url);
+                $this->assertStringEndsWith('/api/orgs/ORG/projects/PROJECT', $url);
 
                 return new JsonMockResponse([
                     'files' => [
@@ -154,7 +154,7 @@ XLIFF;
         $responses = [
             function (string $method, string $url): ResponseInterface {
                 $this->assertSame('GET', $method);
-                $this->assertStringEndsWith('/api/orgs/ORG/projects/PROJECT/', $url);
+                $this->assertStringEndsWith('/api/orgs/ORG/projects/PROJECT', $url);
 
                 return new JsonMockResponse([
                     'files' => [
@@ -248,7 +248,7 @@ XLIFF;
     private function createProvider(MockHttpClient $httpClient, ?XliffFileLoader $loader = null): TransiStoreProvider
     {
         $httpClient = $httpClient->withOptions([
-            'base_uri' => 'https://transi-store.com/api/orgs/ORG/projects/PROJECT',
+            'base_uri' => 'https://transi-store.com/api/',
             'headers' => ['Authorization' => 'Bearer API_KEY'],
         ]);
 
