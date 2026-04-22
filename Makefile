@@ -33,4 +33,4 @@ baseline: phpstan-baseline
 
 .PHONY: phpstan
 phpstan: ## Run PHPStan analysis
-	bin/phpstan analyse
+	vendor/bin/phpstan analyse
