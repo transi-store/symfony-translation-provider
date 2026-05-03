@@ -22,7 +22,7 @@ final class TransiStoreProviderFactory extends AbstractProviderFactory
         private LoggerInterface $logger,
         private string $defaultLocale,
         private LoaderInterface $loader,
-        private GitBranchResolver $branchResolver = new GitBranchResolver(),
+        private GitBranchResolver $branchResolver,
     ) {
     }
 
