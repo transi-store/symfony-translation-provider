@@ -42,6 +42,7 @@ final class TransiStoreProvider implements ProviderInterface
         private string $endpoint,
         private string $orgSlug,
         private string $projectSlug,
+        private ?string $branch = null,
         private XliffFileDumper $xliffFileDumper = new XliffFileDumper(),
     ) {
     }
@@ -89,6 +90,7 @@ final class TransiStoreProvider implements ProviderInterface
                     'format' => self::EXCHANGE_FORMAT,
                     'strategy' => 'overwrite',
                     'file' => new DataPart($content, $filename, 'application/xml'),
+                    ...($this->branch !== null ? ['branch' => $this->branch] : []),
                 ]);
 
                 $response = $this->client->request(
@@ -144,6 +146,7 @@ final class TransiStoreProvider implements ProviderInterface
                     'query' => [
                         'locale' => $locale,
                         'format' => self::EXCHANGE_FORMAT,
+                        ...($this->branch !== null ? ['branch' => $this->branch] : []),
                     ],
                 ]);
 
