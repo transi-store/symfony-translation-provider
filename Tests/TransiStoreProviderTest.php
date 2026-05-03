@@ -245,7 +245,137 @@ XLIFF;
         }
     }
 
-    private function createProvider(MockHttpClient $httpClient, ?XliffFileLoader $loader = null): TransiStoreProvider
+    public function testReadSendsBranchQueryParam(): void
+    {
+        $xliffEn = <<<XLIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="en" datatype="plaintext" original="file.ext">
+    <body>
+      <trans-unit id="1"><source>hello</source><target>Hello</target></trans-unit>
+    </body>
+  </file>
+</xliff>
+XLIFF;
+
+        $responses = [
+            new JsonMockResponse([
+                'files' => [
+                    ['id' => 42, 'format' => 'yaml', 'filePath' => 'translations/messages.<lang>.yaml'],
+                ],
+                'languages' => [['locale' => 'en', 'isDefault' => true]],
+            ]),
+            function (string $method, string $url) use ($xliffEn): ResponseInterface {
+                $this->assertStringContainsString('branch=feature%2Fmy-feature', $url);
+
+                return new MockResponse($xliffEn, ['http_code' => 200]);
+            },
+        ];
+
+        $provider = $this->createProvider(new MockHttpClient($responses), new XliffFileLoader(), 'feature/my-feature');
+        $provider->read(['messages'], ['en']);
+    }
+
+    public function testReadDoesNotSendBranchQueryParamWhenNull(): void
+    {
+        $xliffEn = <<<XLIFF
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="en" datatype="plaintext" original="file.ext">
+    <body>
+      <trans-unit id="1"><source>hello</source><target>Hello</target></trans-unit>
+    </body>
+  </file>
+</xliff>
+XLIFF;
+
+        $responses = [
+            new JsonMockResponse([
+                'files' => [
+                    ['id' => 42, 'format' => 'yaml', 'filePath' => 'translations/messages.<lang>.yaml'],
+                ],
+                'languages' => [['locale' => 'en', 'isDefault' => true]],
+            ]),
+            function (string $method, string $url) use ($xliffEn): ResponseInterface {
+                $this->assertStringNotContainsString('branch=', $url);
+
+                return new MockResponse($xliffEn, ['http_code' => 200]);
+            },
+        ];
+
+        $provider = $this->createProvider(new MockHttpClient($responses), new XliffFileLoader(), null);
+        $provider->read(['messages'], ['en']);
+    }
+
+    public function testWriteSendsBranchFormField(): void
+    {
+        $branchSeen = null;
+        $responses = [
+            new JsonMockResponse([
+                'files' => [
+                    ['id' => 42, 'format' => 'yaml', 'filePath' => 'translations/messages.<lang>.yaml'],
+                ],
+                'languages' => [],
+            ]),
+            function (string $method, string $url, array $options) use (&$branchSeen): ResponseInterface {
+                $body = '';
+                foreach ($options['body'] as $chunk) {
+                    $body .= $chunk;
+                }
+                if (preg_match('/name="branch"\s*\r\n\r\n([^\r\n]+)/', $body, $matches)) {
+                    $branchSeen = $matches[1];
+                }
+
+                return new JsonMockResponse(['success' => true, 'stats' => []]);
+            },
+        ];
+
+        $bag = new TranslatorBag();
+        $catalogue = new MessageCatalogue('en');
+        $catalogue->add(['hello' => 'Hello'], 'messages');
+        $bag->addCatalogue($catalogue);
+
+        $provider = $this->createProvider(new MockHttpClient($responses), null, 'feature/my-feature');
+        $provider->write($bag);
+
+        $this->assertSame('feature/my-feature', $branchSeen);
+    }
+
+    public function testWriteDoesNotSendBranchFormFieldWhenNull(): void
+    {
+        $hasBranchField = false;
+        $responses = [
+            new JsonMockResponse([
+                'files' => [
+                    ['id' => 42, 'format' => 'yaml', 'filePath' => 'translations/messages.<lang>.yaml'],
+                ],
+                'languages' => [],
+            ]),
+            function (string $method, string $url, array $options) use (&$hasBranchField): ResponseInterface {
+                $body = '';
+                foreach ($options['body'] as $chunk) {
+                    $body .= $chunk;
+                }
+                if (str_contains($body, 'name="branch"')) {
+                    $hasBranchField = true;
+                }
+
+                return new JsonMockResponse(['success' => true, 'stats' => []]);
+            },
+        ];
+
+        $bag = new TranslatorBag();
+        $catalogue = new MessageCatalogue('en');
+        $catalogue->add(['hello' => 'Hello'], 'messages');
+        $bag->addCatalogue($catalogue);
+
+        $provider = $this->createProvider(new MockHttpClient($responses), null, null);
+        $provider->write($bag);
+
+        $this->assertFalse($hasBranchField);
+    }
+
+    private function createProvider(MockHttpClient $httpClient, ?XliffFileLoader $loader = null, ?string $branch = null): TransiStoreProvider
     {
         $httpClient = $httpClient->withOptions([
             'base_uri' => 'https://transi-store.com/api/',
@@ -260,6 +390,7 @@ XLIFF;
             'transi-store.com',
             'ORG',
             'PROJECT',
+            $branch,
         );
     }
 }

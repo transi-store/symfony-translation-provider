@@ -20,12 +20,17 @@ final class TransiStoreTranslationProviderBundle extends AbstractBundle
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
         $container->services()
+            ->set(GitBranchResolver::class)
+                ->autowire(false)
+                ->autoconfigure(false)
+
             ->set(TransiStoreProviderFactory::class)
                 ->args([
                     service('http_client'),
                     service('logger'),
                     param('kernel.default_locale'),
                     service('translation.loader.xliff'),
+                    service(GitBranchResolver::class),
                 ])
                 ->tag('translation.provider_factory');
     }

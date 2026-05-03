@@ -12,6 +12,7 @@ use Symfony\Component\Translation\Provider\Dsn;
 use Symfony\Component\Translation\Provider\ProviderFactoryInterface;
 use Symfony\Component\Translation\Test\AbstractProviderFactoryTestCase;
 use Symfony\Component\Translation\Test\IncompleteDsnTestTrait;
+use TransiStore\TranslationProvider\GitBranchResolver;
 use TransiStore\TranslationProvider\TransiStoreProviderFactory;
 
 class TransiStoreProviderFactoryTest extends AbstractProviderFactoryTestCase
@@ -53,7 +54,7 @@ class TransiStoreProviderFactoryTest extends AbstractProviderFactoryTestCase
     {
         $response = new JsonMockResponse(['files' => [], 'languages' => []]);
         $httpClient = new MockHttpClient([$response]);
-        $factory = new TransiStoreProviderFactory($httpClient, new NullLogger(), 'en', new ArrayLoader());
+        $factory = new TransiStoreProviderFactory($httpClient, new NullLogger(), 'en', new ArrayLoader(), new GitBranchResolver());
         $provider = $factory->create(new Dsn('transi-store://API_KEY@default/ORG/PROJECT'));
 
         $provider->read(['messages'], ['en']);
@@ -66,6 +67,6 @@ class TransiStoreProviderFactoryTest extends AbstractProviderFactoryTestCase
 
     public function createFactory(): ProviderFactoryInterface
     {
-        return new TransiStoreProviderFactory(new MockHttpClient(), new NullLogger(), 'en', new ArrayLoader());
+        return new TransiStoreProviderFactory(new MockHttpClient(), new NullLogger(), 'en', new ArrayLoader(), new GitBranchResolver());
     }
 }
